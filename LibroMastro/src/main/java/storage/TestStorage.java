@@ -28,6 +28,8 @@ public class TestStorage {
 			
 			Fattura fattura1 = new Fattura("12345678901","Lavanderia Planet","0123",LocalDate.of(2020,3,26),
 					LocalDate.of(2020,4,1),Money.of(eur, 666.97),"fattura iniziale");
+			Fattura fattura1mod = new Fattura("12345678901","Lavanderia Planet","0123",LocalDate.of(2020,3,26),
+					LocalDate.of(2020,4,1),Money.of(eur, 999),"fattura iniziale");
 			Fattura fattura2=new Fattura("12345678901","Lavanderia Planet","0124", LocalDate.of(2020,3,27),
 					LocalDate.of(2020,4,2),Money.of(eur, 0.03), "seconda fattura");
 			Fattura fattura3 = new Fattura("12345678901","Lavanderia Planet","0125",LocalDate.of(2020,3,26),
@@ -41,19 +43,19 @@ public class TestStorage {
 			PagamentoParziale pp4=new PagamentoParziale("0124",Money.of(eur,0.01), LocalDate.now(), TipoPagamento.Bonifico,"12345678901");    
 			                                                                         
 			DataBaseStorageManager dbsm=new DataBaseStorageManager();
-			dbsm.initStorage("postgres", "academy2020", "jdbc:postgresql://localhost:5432/Fatture");
+			dbsm.initStorage("pasquale_moretti", "gidomico", "jdbc:postgresql://localhost:5432/Fatture");
 			//dbsm.scriviEstrattoConto("lavanderia planet", "12345678901", LocalDate.parse("1999-01-01"), LocalDate.parse("3000-01-01"));
 			
-			dbsm.inserisciAzienda(new Azienda("Lavanderia Planet","12345678901"));
-			dbsm.inserisciFattura(fattura1);
-			dbsm.inserisciFattura(fattura2);
-			dbsm.inserisciFattura(fattura3);
-			dbsm.inserisciPagamentoParziale(pp1);
-			dbsm.inserisciPagamentoParziale(pp2);
-			dbsm.inserisciPagamentoParziale(pp3);
-			dbsm.inserisciPagamentoParziale(pp4);
-			dbsm.inserisciFattura(fattura4);
-			
+			//dbsm.inserisciAzienda(new Azienda("Lavanderia Planet","12345678901"));
+			//dbsm.inserisciFattura(fattura1);
+			//dbsm.inserisciFattura(fattura2);
+			//dbsm.inserisciFattura(fattura3);
+			//dbsm.inserisciPagamentoParziale(pp1);
+			//dbsm.inserisciPagamentoParziale(pp2);
+			//dbsm.inserisciPagamentoParziale(pp3);
+			//dbsm.inserisciPagamentoParziale(pp4);
+			//dbsm.inserisciFattura(fattura4);
+			dbsm.updateFattura(fattura1mod, fattura1);
 			
 			
 

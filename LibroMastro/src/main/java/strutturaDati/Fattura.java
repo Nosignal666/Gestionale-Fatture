@@ -34,7 +34,7 @@ public class Fattura {
 		this.dataScadenza = dataScadenza;
 		this.note = note;
 		this.partitaIva=partitaIva;
-		this.nomeAzienda=nomeAzienda;
+		this.nomeAzienda=nomeAzienda.toLowerCase().trim();
 		this.importo=importo;
 	}
 	

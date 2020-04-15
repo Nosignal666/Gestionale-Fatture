@@ -35,6 +35,8 @@ import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextArea;
 import java.awt.Color;
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 
 public class InserisciPagamentoParzialeView {
 	
@@ -45,12 +47,12 @@ public class InserisciPagamentoParzialeView {
 	private JTextField campoNrFattura;
 	private JTextField campoImporto;
 	private JLabel lblNewLabel_2;
-	private JTextField campoDataPagamento;
 	private JLabel lblNewLabel_3;
 	private JButton bottoneInserisci;
 	private JComboBox selectorTipoPagamento;
 	private Boolean goOn=false;
 	private JTextArea alertArea;
+	private DatePicker dataPagamentoPicker;
 
 	
 	/**
@@ -66,7 +68,7 @@ public class InserisciPagamentoParzialeView {
 	private void initialize() {
 		frmGestionaleFattura = new JFrame();
 		frmGestionaleFattura.setTitle("Gestionale Fattura - Nuovo PP");
-		frmGestionaleFattura.setBounds(100, 100, 501, 278);
+		frmGestionaleFattura.setBounds(100, 100, 530, 261);
 		frmGestionaleFattura.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frmGestionaleFattura.getContentPane().setLayout(new FormLayout(new ColumnSpec[] {
 				FormSpecs.RELATED_GAP_COLSPEC,
@@ -83,7 +85,7 @@ public class InserisciPagamentoParzialeView {
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				FormSpecs.DEFAULT_ROWSPEC,
 				FormSpecs.RELATED_GAP_ROWSPEC,
-				FormSpecs.DEFAULT_ROWSPEC,
+				RowSpec.decode("default:grow"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				FormSpecs.DEFAULT_ROWSPEC,
 				FormSpecs.RELATED_GAP_ROWSPEC,
@@ -114,24 +116,11 @@ public class InserisciPagamentoParzialeView {
 		lblNewLabel_2.setFont(new Font("Tahoma", Font.BOLD, 15));
 		frmGestionaleFattura.getContentPane().add(lblNewLabel_2, "4, 8, left, default");
 		
-		campoDataPagamento = new JTextField();
-		campoDataPagamento.setText("dd/MM/yyyy");
-		frmGestionaleFattura.getContentPane().add(campoDataPagamento, "6, 8, fill, default");
-		campoDataPagamento.setColumns(10);
-		campoDataPagamento.addFocusListener(new FocusListener() {
-			
-			@Override
-			public void focusLost(FocusEvent e) {
-				if(campoDataPagamento.getText().equals("")) campoDataPagamento.setText("dd/MM/yyyy");
-				
-			}
-			
-			@Override
-			public void focusGained(FocusEvent e) {
-				if(campoDataPagamento.getText().equals("dd/MM/yyyy")) campoDataPagamento.setText("");
-				
-			}
-		});
+		DatePickerSettings settings=new DatePickerSettings();
+		settings.setAllowEmptyDates(false);
+		settings.setAllowKeyboardEditing(false);
+		dataPagamentoPicker = new DatePicker(settings);
+		frmGestionaleFattura.getContentPane().add(dataPagamentoPicker, "6, 8, fill, fill");
 		
 		
 		lblNewLabel_3 = new JLabel("Tipo pagamento:");
@@ -144,7 +133,7 @@ public class InserisciPagamentoParzialeView {
 			public void actionPerformed(ActionEvent e) {
 				
 				try {
-					LocalDate dataPagamento=LocalDate.parse(campoDataPagamento.getText(),DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+					LocalDate dataPagamento=dataPagamentoPicker.getDate();
 					Money importo=Money.parse("EUR"+ campoImporto.getText());
 					if(!goOn & appModel.checkifAlreadyExist(dataPagamento, importo)) {
 						goOn=true;
@@ -155,7 +144,7 @@ public class InserisciPagamentoParzialeView {
 							dataPagamento,
 							TipoPagamento.valueOf(selectorTipoPagamento.getSelectedItem().toString()),partitaIva);
 					appModel.inserisciPagamentoParziale(pp);
-					campoDataPagamento.setText("");
+					dataPagamentoPicker.clear();
 					campoImporto.setText("");
 					alertArea.setText("");
 					appModel.refetch();

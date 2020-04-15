@@ -17,7 +17,7 @@ public class Azienda {
 		super();
 		if(!partitaIva.matches("[0-9]{11}")) throw new MalformedDataException("Partita Iva non valida"); 
 		if(nomeAzienda.equals("")) throw new MalformedDataException("Nome azienda non valido");
-		this.nomeAzienda = nomeAzienda;
+		this.nomeAzienda = nomeAzienda.toLowerCase().trim();
 		this.partitaIva = partitaIva;
 
 	}

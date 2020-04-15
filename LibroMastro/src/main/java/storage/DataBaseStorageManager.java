@@ -309,12 +309,32 @@ public class DataBaseStorageManager{
 		}
 	}
 	
-	public void updateFattura(Fattura fattura) throws SQLException {
+	public void updateFattura(Fattura fatturaModificata,Fattura fatturaOriginale) throws SQLException {
 		Connection con=DriverManager.getConnection(url,user,password);
-		Statement stm;
-		String stmString="update fatture set (partitaiva,nomeazienda,codiceunivoco,dataemissione,datascadenza,importo,note)="
-				+ "";
-		
+		Statement stm=null;
+		try {
+			String stmString="update fatture set (partitaiva,nomeazienda,codiceunivoco,dataemissione,datascadenza,importo,note)=";
+			StringJoiner sj=new StringJoiner("','", "('", "')");
+			sj.add(fatturaModificata.getPartitaIva());
+			sj.add(fatturaModificata.getNomeAzienda());
+			sj.add(fatturaModificata.getCodiceUnivoco());
+			sj.add(fatturaModificata.getDataEmissione().toString());
+			sj.add(fatturaModificata.getDataScadenza().toString());
+			sj.add(fatturaModificata.getImporto().getAmount().toString());
+			sj.add(fatturaModificata.getNote());
+			StringJoiner sj1=new StringJoiner("','","('","')");
+			sj1.add(fatturaOriginale.getPartitaIva());
+			sj1.add(fatturaOriginale.getCodiceUnivoco());
+			stmString+=sj.toString();
+			stmString+=" where (partitaiva,codiceunivoco)="+sj1.toString();
+			stm=con.createStatement();
+			stm.execute(stmString);
+		}catch(SQLException e) {
+			throw e;
+		}finally {
+			stm.close();
+			con.close();
+		}
 	}
 	
 	

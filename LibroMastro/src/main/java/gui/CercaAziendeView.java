@@ -13,6 +13,8 @@ import com.jgoodies.forms.layout.FormSpecs;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
+
 import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
@@ -26,6 +28,8 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.awt.event.ActionEvent;
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 
 public class CercaAziendeView implements Observer{
 
@@ -34,9 +38,9 @@ public class CercaAziendeView implements Observer{
 	private AppModel appModel;
 	private JLabel lblNewLabel;
 	private JLabel lblNewLabel_1;
-	private JTextField campoDataInizio;
-	private JTextField campoDatafine;
 	private JButton btnNewButton;
+	private DatePicker dataInizioPicker;
+	private DatePicker dataFinePicker;
 	
 
 	/**
@@ -54,77 +58,46 @@ public class CercaAziendeView implements Observer{
 	private void initialize() {
 		frmGestionaleFatture = new JFrame();
 		frmGestionaleFatture.setTitle("Gestionale Fatture - Aziende");
-		frmGestionaleFatture.setBounds(100, 100, 420, 564);
+		frmGestionaleFatture.setBounds(100, 100, 533, 610);
 		frmGestionaleFatture.setDefaultCloseOperation(JFrame.HIDE_ON_CLOSE);
-		frmGestionaleFatture.getContentPane().setLayout(new FormLayout(new ColumnSpec[] {
+		JPanel panel=new JPanel();
+		JScrollPane scrollPaneMain=new JScrollPane(panel);
+		panel.setLayout(new FormLayout(new ColumnSpec[] {
 				FormSpecs.RELATED_GAP_COLSPEC,
-				ColumnSpec.decode("max(82dlu;default)"),
+				ColumnSpec.decode("max(88dlu;default)"),
 				FormSpecs.RELATED_GAP_COLSPEC,
-				ColumnSpec.decode("max(67dlu;default)"),
-				FormSpecs.RELATED_GAP_COLSPEC,
-				ColumnSpec.decode("left:max(44dlu;default)"),},
+				ColumnSpec.decode("max(174dlu;default)"),},
 			new RowSpec[] {
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("top:max(220dlu;default)"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
-				FormSpecs.DEFAULT_ROWSPEC,
+				RowSpec.decode("default:grow"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
-				FormSpecs.DEFAULT_ROWSPEC,
+				RowSpec.decode("default:grow"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
-				FormSpecs.DEFAULT_ROWSPEC,
+				RowSpec.decode("max(8dlu;default)"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
-				FormSpecs.DEFAULT_ROWSPEC,}));
+				RowSpec.decode("max(8dlu;default)"),}));
+		frmGestionaleFatture.getContentPane().add(scrollPaneMain);
 		
 		tabellaAziende=new JTable();
 		tabellaAziende.setModel(new TabellaAziendeModel(appModel.getAziende()));
 		JScrollPane scrollPane = new JScrollPane(tabellaAziende);
-		frmGestionaleFatture.getContentPane().add(scrollPane, "2, 2, 5, 1, fill, fill");
+		panel.add(scrollPane, "2, 2, 3, 1, fill, fill");
 		
 		lblNewLabel = new JLabel("Data inizio:");
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
-		frmGestionaleFatture.getContentPane().add(lblNewLabel, "2, 4, left, default");
+		panel.add(lblNewLabel, "2, 4, left, default");
 		
-		campoDataInizio = new JTextField();
-		frmGestionaleFatture.getContentPane().add(campoDataInizio, "4, 4, fill, default");
-		campoDataInizio.setColumns(10);
-		campoDataInizio.setText("dd/MM/yyyy");
-		campoDataInizio.addFocusListener(new FocusListener() {
-			
-			@Override
-			public void focusLost(FocusEvent e) {
-				if(campoDataInizio.getText().equals("")) campoDataInizio.setText("dd/MM/yyyy");
-				
-			}
-			
-			@Override
-			public void focusGained(FocusEvent e) {
-				if(campoDataInizio.getText().equals("dd/MM/yyyy")) campoDataInizio.setText("");
-				
-			}
-		});
+		DatePickerSettings settings1=new DatePickerSettings();
+		settings1.setAllowEmptyDates(false);
+		settings1.setAllowKeyboardEditing(false);
+		dataInizioPicker = new DatePicker(settings1);
+		panel.add(dataInizioPicker, "4, 4, fill, fill");
 		
 		lblNewLabel_1 = new JLabel("Data fine:");
 		lblNewLabel_1.setFont(new Font("Tahoma", Font.BOLD, 15));
-		frmGestionaleFatture.getContentPane().add(lblNewLabel_1, "2, 6, left, default");
-		
-		campoDatafine = new JTextField();
-		frmGestionaleFatture.getContentPane().add(campoDatafine, "4, 6, fill, default");
-		campoDatafine.setColumns(10);
-		campoDatafine.setText("dd/MM/yyyy");
-		campoDatafine.addFocusListener(new FocusListener() {
-			
-			@Override
-			public void focusLost(FocusEvent e) {
-				if(campoDatafine.getText().equals("")) campoDatafine.setText("dd/MM/yyyy");
-				
-			}
-			
-			@Override
-			public void focusGained(FocusEvent e) {
-				if(campoDatafine.getText().equals("dd/MM/yyyy")) campoDatafine.setText("");
-				
-			}
-		});
+		panel.add(lblNewLabel_1, "2, 6, left, default");
 		
 		btnNewButton = new JButton("Genera estratto Conto");
 		btnNewButton.addActionListener(new ActionListener() {
@@ -134,18 +107,24 @@ public class CercaAziendeView implements Observer{
 					String nomeAzienda=(String)tabellaAziende.getValueAt(tabellaAziende.getSelectedRow(),0);
 					String partitaIva=(String)tabellaAziende.getValueAt(tabellaAziende.getSelectedRow(),1);
 					appModel.scriviEstrattoConto(nomeAzienda, partitaIva,
-							LocalDate.parse(campoDataInizio.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy")),
-							LocalDate.parse(campoDatafine.getText(), DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+							dataInizioPicker.getDate(),
+							dataFinePicker.getDate());
+					dataFinePicker.clear();
+					dataInizioPicker.clear();
 				} catch (Exception e) {
-					System.out.println("ci sono");
-			
 					new LogView(e);
 					e.printStackTrace();
 				}
 			}
 		});
+		
+		DatePickerSettings settings2=new DatePickerSettings();
+		settings2.setAllowEmptyDates(false);
+		settings2.setAllowKeyboardEditing(false);
+		dataFinePicker = new DatePicker(settings2);
+		panel.add(dataFinePicker, "4, 6, fill, fill");
 		btnNewButton.setFont(new Font("Tahoma", Font.ITALIC, 15));
-		frmGestionaleFatture.getContentPane().add(btnNewButton, "2, 8");
+		panel.add(btnNewButton, "2, 8");
 	}
 
 	@Override

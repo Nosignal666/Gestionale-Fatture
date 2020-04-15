@@ -68,6 +68,7 @@ and (fatture.codiceunivoco, fatture.partitaiva)=(new.codiceunivoco,new.partitaiv
 group by (fatture.codiceunivoco,fatture.partitaiva) then update fatture set stato='parziale'
 where (fatture.codiceunivoco,fatture.partitaiva)=(new.codiceunivoco,new.partitaiva);
 else update fatture set stato='completato' where (fatture.codiceunivoco,fatture.partitaiva)=(new.codiceunivoco,new.partitaiva);
+new.utente=current_user;
 end if;
 when 'DELETE' then
 if count(*)=0 from pagamentiparziali where (codiceunivoco,partitaiva)=(new.codiceunivoco,new.partitaiva) then
@@ -96,6 +97,7 @@ i pagamenti parziali';
 elsif min(pagamentiparziali.dataPagamento)<new.dataEmissione from pagamentiparziali where pagamentiparziali.codiceunivoco=new.codiceunivoco 
 then raise exception 'almeno un pagamento parziale ha la data pagamento antecedente la nuova data di emissione,
 modificare o cancellare prima i pagamenti parziali' ;
+new.utente=current_user;
 end if;
 return new;
 end;
