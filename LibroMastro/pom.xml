@@ -1,0 +1,58 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ProgettiCosimo</groupId>
+  <artifactId>LibroMastro</artifactId>
+  <packaging>jar</packaging>
+  <version>0.0.1-SNAPSHOT</version>
+  
+   <properties>
+   <itext.version>RELEASE</itext.version>
+</properties>
+<dependencies>
+	<!-- add all iText 7 modules -->
+    <dependency>
+        <groupId>com.itextpdf</groupId>
+        <artifactId>itext7-core</artifactId>
+        <version>${itext.version}</version>
+        <type>pom</type>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
+<dependency>
+    <groupId>org.postgresql</groupId>
+    <artifactId>postgresql</artifactId>
+    <version>42.2.12</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/org.joda/joda-money -->
+<dependency>
+    <groupId>org.joda</groupId>
+    <artifactId>joda-money</artifactId>
+    <version>1.0.1</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-common -->
+<dependency>
+    <groupId>com.jgoodies</groupId>
+    <artifactId>jgoodies-common</artifactId>
+    <version>1.8.1</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/com.jgoodies/jgoodies-forms -->
+<dependency>
+    <groupId>com.jgoodies</groupId>
+    <artifactId>jgoodies-forms</artifactId>
+    <version>1.9.0</version>
+</dependency>
+
+<!-- https://mvnrepository.com/artifact/com.miglayout/miglayout -->
+<dependency>
+    <groupId>com.miglayout</groupId>
+    <artifactId>miglayout</artifactId>
+    <version>3.7.4</version>
+</dependency>
+
+
+
+</dependencies>
+
+
+</project>
