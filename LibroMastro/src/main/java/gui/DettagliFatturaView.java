@@ -6,11 +6,16 @@ import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.RowSpec;
 import com.jgoodies.forms.layout.FormSpecs;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.sql.SQLException;
+
 import javax.swing.JTextField;
 import javax.swing.JTextArea;
 import javax.swing.JScrollPane;
@@ -20,8 +25,7 @@ import javax.swing.JButton;
 
 public class DettagliFatturaView implements Observer {
 	
-	private String codiceUnivoco;
-	private String partitaIva;
+	private Fattura fattura;
 	private AppModel appModel;
     private JFrame frmGestionaleFatture;
 	private JTextField campoUtente;
@@ -40,11 +44,10 @@ public class DettagliFatturaView implements Observer {
 	/**
 	 * Create the application.
 	 */
-	public DettagliFatturaView(AppModel appModel,String codiceUnivoco,String partitaIva) {
+	public DettagliFatturaView(AppModel appModel,Fattura fattura) {
 		this.appModel=appModel;
 		appModel.aggiungiObserver(this);
-		this.codiceUnivoco=codiceUnivoco;
-		this.partitaIva=partitaIva;
+		this.fattura=fattura;
 		initialize();
 	}
 	
@@ -133,15 +136,29 @@ public class DettagliFatturaView implements Observer {
 		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 15));
 		frmGestionaleFatture.getContentPane().add(lblNewLabel_3, "4, 10");
 		
+		JPopupMenu popupMenu=new JPopupMenu();
+		JMenuItem ModificaPagamentoParzialemenuItem=new JMenuItem("Modifica");
+		ModificaPagamentoParzialemenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int indicePagamento=(int)tabellaPagamentiParziali.getValueAt(tabellaPagamentiParziali.getSelectedRow(), 0);
+				new ModificaPagamentoParzialeView(appModel, fattura, indicePagamento);
+			}
+		});
+		popupMenu.add(ModificaPagamentoParzialemenuItem);
+		
 		tabellaPagamentiParziali = new JTable();
 		tabellaPagamentiParziali.setModel(new TabellaPPModel());
+		tabellaPagamentiParziali.setComponentPopupMenu(popupMenu);
 		scrollPane = new JScrollPane(tabellaPagamentiParziali);
 		frmGestionaleFatture.getContentPane().add(scrollPane, "6, 10, 3, 1, fill, fill");
+		
 		
 		bottoneInserisciPagamentoParziale = new JButton("Nuovo Pagamento");
 		bottoneInserisciPagamentoParziale.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				new InserisciPagamentoParzialeView(appModel,codiceUnivoco,partitaIva);
+				new InserisciPagamentoParzialeView(appModel,fattura);
 			}
 		});
 		
@@ -161,13 +178,21 @@ public class DettagliFatturaView implements Observer {
 			}
 		});
 		
-		fillView();
+		try {
+			fillView();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			new LogView(e1);
+		}
 		frmGestionaleFatture.setVisible(true);
 	}
 	
-	private void fillView() {
-		Fattura fattura=appModel.getFattura(codiceUnivoco,partitaIva);
-		if(fattura==null) return;
+	private void fillView() throws SQLException {
+		fattura=appModel.getFattura(fattura.getCodiceUnivoco(),fattura.getPartitaIva());
+		if(fattura==null) {
+			frmGestionaleFatture.dispose();
+			throw new SQLException("identificatori fattura modificati,la finestra Dettagli Fattura è stata chiusa;");
+		}
 		TabellaPPModel tppm=(TabellaPPModel)tabellaPagamentiParziali.getModel();
 		tppm.setPagamentiParziali(fattura.getPagamentiParziali());
 		campoNrFattura.setText(fattura.getCodiceUnivoco());
@@ -180,7 +205,13 @@ public class DettagliFatturaView implements Observer {
 	
 	@Override
 	public void notificaCambiamento() {
-		fillView();
+		try {
+			fillView();
+		}catch(Exception e) {
+			e.printStackTrace();
+			new LogView(e);
+		}
+		
 	}
 	
 }

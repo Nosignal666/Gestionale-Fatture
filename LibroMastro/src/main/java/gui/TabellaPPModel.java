@@ -14,7 +14,7 @@ import strutturaDati.PagamentoParziale;
 public class TabellaPPModel extends AbstractTableModel{
 	
 	private ArrayList<PagamentoParziale> pagamentiParziali;
-	private final String[] nomeCampi= {"Data pagamento","Importo","Tipo Pagamento","Registrato da"};
+	private final String[] nomeCampi= {"Indice pagamento","Data pagamento","Importo","Tipo Pagamento","Registrato da"};
 	private Field[] campi=PagamentoParziale.class.getDeclaredFields();
 	
 	public TabellaPPModel() {
@@ -50,7 +50,7 @@ public class TabellaPPModel extends AbstractTableModel{
 		Object o=null;
 		campi[columnIndex].setAccessible(true);
 		try {
-			 if(columnIndex==0) {
+			 if(columnIndex==1) {
 				 LocalDate date=(LocalDate)campi[columnIndex].get(pagamentiParziali.get(rowIndex));
 				 o=date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
 			 }
@@ -63,7 +63,6 @@ public class TabellaPPModel extends AbstractTableModel{
 
 	@Override
 	public boolean isCellEditable(int rowIndex, int columnIndex) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

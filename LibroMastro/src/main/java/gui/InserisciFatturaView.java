@@ -22,15 +22,26 @@ import org.joda.money.Money;
 
 import javax.swing.JTextArea;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.awt.event.ActionEvent;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
+import java.awt.Color;
 
 public class InserisciFatturaView {
 
@@ -43,6 +54,10 @@ public class InserisciFatturaView {
 	JTextArea areaNote;
 	private DatePicker dataEmissionePicker;
 	private DatePicker dataScadenzaPicker;
+	JFileChooser fc=null;
+	JTextArea areaFeedbackFile;
+	JTextArea alertArea;
+	private Boolean isApproved=false;
 
 	/**
 	 * Create the application.
@@ -58,16 +73,19 @@ public class InserisciFatturaView {
 	private void initialize() {
 		frmGestionaleFatture = new JFrame();
 		frmGestionaleFatture.setTitle("Gestionale Fatture - Aggiungi fattura");
-		frmGestionaleFatture.setBounds(100, 100, 390, 528);
+		frmGestionaleFatture.setBounds(100, 100, 420, 544);
 		frmGestionaleFatture.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		JPanel panel=new JPanel();
 		JScrollPane scrollPane=new JScrollPane(panel);
 		panel.setLayout(new FormLayout(new ColumnSpec[] {
 				ColumnSpec.decode("max(8dlu;default)"),
-				FormSpecs.DEFAULT_COLSPEC,
+				ColumnSpec.decode("max(59dlu;default)"),
 				FormSpecs.RELATED_GAP_COLSPEC,
-				ColumnSpec.decode("max(122dlu;default)"),
-				ColumnSpec.decode("max(6dlu;default)"),},
+				ColumnSpec.decode("max(27dlu;default)"),
+				FormSpecs.RELATED_GAP_COLSPEC,
+				ColumnSpec.decode("left:max(29dlu;default)"),
+				FormSpecs.RELATED_GAP_COLSPEC,
+				ColumnSpec.decode("left:max(14dlu;default)"),},
 			new RowSpec[] {
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				FormSpecs.DEFAULT_ROWSPEC,
@@ -86,7 +104,9 @@ public class InserisciFatturaView {
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("max(115dlu;default)"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
-				RowSpec.decode("top:max(19dlu;default)"),
+				RowSpec.decode("top:max(19dlu;default):grow"),
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				RowSpec.decode("top:max(19dlu;default):grow"),
 				RowSpec.decode("top:max(8dlu;default)"),}));
 		frmGestionaleFatture.getContentPane().add(scrollPane);
 		
@@ -96,7 +116,7 @@ public class InserisciFatturaView {
 		panel.add(lblNewLabel, "2, 4, right, default");
 		
 		campoCodiceUnivoco = new JTextField();
-		panel.add(campoCodiceUnivoco, "4, 4, fill, default");
+		panel.add(campoCodiceUnivoco, "4, 4, 3, 1, fill, default");
 		campoCodiceUnivoco.setColumns(10);
 		
 		JLabel lblNewLabel_1 = new JLabel("Nome azienda: ");
@@ -105,7 +125,7 @@ public class InserisciFatturaView {
 		
 		campoNomeAzienda = new JTextField();
 		campoNomeAzienda.setText("");
-		panel.add(campoNomeAzienda, "4, 6, fill, default");
+		panel.add(campoNomeAzienda, "4, 6, 3, 1, fill, default");
 		campoNomeAzienda.setColumns(10);
 		
 		JLabel lblNewLabel_6 = new JLabel("Partita Iva:");
@@ -113,7 +133,7 @@ public class InserisciFatturaView {
 		panel.add(lblNewLabel_6, "2, 8, left, default");
 		
 		campoPartitaIva = new JTextField();
-		panel.add(campoPartitaIva, "4, 8, fill, default");
+		panel.add(campoPartitaIva, "4, 8, 3, 1, fill, default");
 		campoPartitaIva.setColumns(10);
 		
 		JLabel lblNewLabel_2 = new JLabel("Data emissione:");
@@ -124,7 +144,7 @@ public class InserisciFatturaView {
 		settings1.setAllowEmptyDates(false);
 		settings1.setAllowKeyboardEditing(false);
 		dataEmissionePicker = new DatePicker(settings1);
-		panel.add(dataEmissionePicker, "4, 10, fill, fill");
+		panel.add(dataEmissionePicker, "4, 10, 3, 1, fill, fill");
 		
 		JLabel lblNewLabel_3 = new JLabel("Data scadenza:");
 		lblNewLabel_3.setFont(new Font("Tahoma", Font.BOLD, 15));
@@ -134,7 +154,7 @@ public class InserisciFatturaView {
 		settings2.setAllowEmptyDates(false);
 		settings2.setAllowKeyboardEditing(false);
 		dataScadenzaPicker = new DatePicker(settings2);
-		panel.add(dataScadenzaPicker, "4, 12, fill, fill");
+		panel.add(dataScadenzaPicker, "4, 12, 3, 1, fill, fill");
 		
 		
 		
@@ -150,16 +170,25 @@ public class InserisciFatturaView {
 							dataEmissionePicker.getDate(),
 							dataScadenzaPicker.getDate(),
 							Money.parse("EUR "+campoImporto.getText()),areaNote.getText());
-					appModel.inserisciFattura(fattura);
-					appModel.refetch();
-					campoCodiceUnivoco.setText("");
-					dataEmissionePicker.clear();
-					dataScadenzaPicker.clear();
-					campoNomeAzienda.setText("");
-					campoPartitaIva.setText("");
-					campoImporto.setText("");
-					areaNote.setText("");
-				} catch (MalformedDataException | SQLException e1) {
+					if(!isApproved & fc==null) {
+						alertArea.setText("Attenzione! nessun file selezionato, cliccare di nuovo per confermare.");
+						isApproved=true;
+					}
+					else {
+						if(fc!=null) {
+							fattura.setPdfFile(fc.getSelectedFile());
+						}
+						appModel.inserisciFattura(fattura);
+						appModel.refetch();
+						campoCodiceUnivoco.setText("");
+						dataEmissionePicker.setDateToToday();;
+						dataScadenzaPicker.setDateToToday();
+						campoNomeAzienda.setText("");
+						campoPartitaIva.setText("");
+						campoImporto.setText("");
+						areaNote.setText("");
+					}
+				} catch (Exception e1) {
 					new LogView(e1);
 					e1.printStackTrace();
 				}
@@ -167,7 +196,7 @@ public class InserisciFatturaView {
 		});
 		
 		campoImporto = new JTextField();
-		panel.add(campoImporto, "4, 14, fill, default");
+		panel.add(campoImporto, "4, 14, 3, 1, fill, default");
 		campoImporto.setColumns(10);
 		
 		JLabel lblNewLabel_5 = new JLabel("Note:");
@@ -177,11 +206,40 @@ public class InserisciFatturaView {
 		areaNote = new JTextArea();
 		areaNote.setLineWrap(true);
 		areaNote.setText("");
-		panel.add(areaNote, "4, 16, fill, fill");
+		panel.add(areaNote, "4, 16, 3, 1, fill, fill");
 		bottoneInserisciFattura.setFont(new Font("Tahoma", Font.ITALIC, 15));
 		panel.add(bottoneInserisciFattura, "2, 18");
+		
+		JButton bottoneAggiungiPdf = new JButton("Seleziona file");
+		bottoneAggiungiPdf.setFont(new Font("Tahoma", Font.ITALIC, 15));
+		bottoneAggiungiPdf.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				areaFeedbackFile.setText("");
+				fc=new JFileChooser();
+				fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fc.setFileHidingEnabled(true);
+				fc.setApproveButtonText("Seleziona");
+				if(fc.showOpenDialog(panel)==JFileChooser.APPROVE_OPTION) areaFeedbackFile.setText("OK");
+			}
+		});
+		panel.add(bottoneAggiungiPdf, "4, 18");
+		
+		areaFeedbackFile = new JTextArea();
+		areaFeedbackFile.setLineWrap(true);
+		areaFeedbackFile.setFont(new Font("Monospaced", Font.PLAIN, 15));
+		areaFeedbackFile.setForeground(Color.BLUE);
+		areaFeedbackFile.setBackground(frmGestionaleFatture.getBackground());
+		panel.add(areaFeedbackFile, "6, 18, left, fill");
+		
+		alertArea = new JTextArea();
+		alertArea.setForeground(Color.RED);
+		alertArea.setBackground(frmGestionaleFatture.getBackground());
+		alertArea.setLineWrap(true);
+		panel.add(alertArea, "2, 20, 7, 1, fill, fill");
 		frmGestionaleFatture.setVisible(true);
 	}
+	
+	
 	
 	
 

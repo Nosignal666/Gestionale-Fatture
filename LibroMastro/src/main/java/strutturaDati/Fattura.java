@@ -1,5 +1,6 @@
 package strutturaDati;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.ArrayList;
 
@@ -19,6 +20,7 @@ public class Fattura {
 	private String note;
 	private String user="non registrato";
 	private String stato="nessuno";
+	private File pdfFile=null;
 	private ArrayList<PagamentoParziale> pagamentiParziali;
 	
 	public Fattura(String partitaIva,String nomeAzienda,
@@ -38,6 +40,32 @@ public class Fattura {
 		this.importo=importo;
 	}
 	
+	
+	
+	
+
+
+
+	public File getPdfFile() {
+		return pdfFile;
+	}
+
+
+
+
+
+
+
+	public void setPdfFile(File pdfFile) {
+		this.pdfFile = pdfFile;
+	}
+
+
+
+
+
+
+
 	public String getNrFattura() {
 		return numeroProgressivo+"\\"
 				+anno;
@@ -164,6 +192,10 @@ public class Fattura {
 
 	public ArrayList<PagamentoParziale> getPagamentiParziali() {
 		return pagamentiParziali;
+	}
+	
+	public PagamentoParziale getPagamentoParziale(int indicePagamento) {
+		return pagamentiParziali.stream().filter(x -> x.getIndicepagamento()==indicePagamento).findFirst().orElse(null);
 	}
 
 

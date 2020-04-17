@@ -5,12 +5,12 @@ import org.joda.money.Money;
 
 public class PagamentoParziale {
 	
+	private int indicepagamento=-1;
 	private LocalDate dataPagamento;
 	private Money importo;
 	private TipoPagamento tipoPagamento;
 	private String user="non registrato";
 	private String codiceUnivoco;
-	private int indicepagamento=-1;
 	private String partitaIva;
 
 	public PagamentoParziale(String codiceUnivoco, Money importo,LocalDate dataPagamento, TipoPagamento tipoPagamento,String partitaIva) {

@@ -84,7 +84,7 @@ public class AppModel {
 	public void inserisciPagamentoParziale(PagamentoParziale pp) throws SQLException, MalformedDataException {
 		dbsm.inserisciPagamentoParziale(pp);
 	}
-	public void inserisciFattura(Fattura fattura) throws SQLException {
+	public void inserisciFattura(Fattura fattura) throws SQLException, FileNotFoundException {
 		dbsm.inserisciFattura(fattura);
 	}
 	public void inserisciAzienda(Azienda azienda) throws SQLException, MalformedDataException {
@@ -96,12 +96,17 @@ public class AppModel {
 	public void scriviEstrattoConto(String nomeAzienda,String partitaIva,LocalDate dataInizio,LocalDate dataFine) throws FileNotFoundException, SQLException, MalformedDataException {
 		dbsm.scriviEstrattoConto(nomeAzienda, partitaIva, dataInizio, dataFine);
 	}
-	
 	public ArrayList<Azienda> leggiAziende(String partitaIvaHead,String nomeAziendaPiece) throws SQLException, MalformedDataException{
 		return dbsm.leggiAziende(partitaIvaHead, nomeAziendaPiece);
 	}
+	public byte[] getPdfFileContent(String codiceUnivoco,String partitaIva) throws SQLException {
+		return dbsm.getPdfFileContent(codiceUnivoco, partitaIva);
+	}
+	public void modificaFattura(Fattura fatturaOriginale,Fattura fatturaModificata) throws Exception {
+		dbsm.modificaFattura(fatturaOriginale,fatturaModificata);
+	}
+	public void modificaPagamentoParziale(PagamentoParziale ppOriginale,PagamentoParziale ppModificato) throws SQLException {
+		dbsm.modificaPagamentoParziale(ppOriginale, ppModificato);
+	}
 
-	
-	
-	
 }

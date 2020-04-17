@@ -12,8 +12,11 @@ import javax.swing.JTabbedPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.BoxLayout;
 import java.awt.Color;
+import java.awt.Desktop;
+
 import com.jgoodies.forms.layout.FormLayout;
 import com.jgoodies.forms.layout.ColumnSpec;
 import com.jgoodies.forms.layout.RowSpec;
@@ -35,6 +38,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
@@ -123,8 +130,58 @@ public class MainView implements Observer {
 		CercaFatturePanel.add(campoNomeAzienda, "4, 4, fill, fill");
 		campoNomeAzienda.setColumns(10);
 		
-		
+		JPopupMenu popupMenu=new JPopupMenu();
+		JMenuItem getPdfFileMenuItem=new JMenuItem("Salva pdf");
+		getPdfFileMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				FileOutputStream fos=null;
+				byte[] pdfFileContent;
+				try {
+					String codiceUnivoco=(String)tabellaFatture.getValueAt(tabellaFatture.getSelectedRow(),0);
+					String partitaIva=(String)tabellaFatture.getValueAt(tabellaFatture.getSelectedRow(),2);
+					pdfFileContent=appModel.getPdfFileContent(codiceUnivoco, partitaIva);					
+					JFileChooser fc=new JFileChooser();
+					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					fc.setFileHidingEnabled(true);
+					fc.showSaveDialog(CercaFatturePanel);
+					if(fc.getSelectedFile()!=null) {
+						File pdfFile=new File(fc.getSelectedFile().getAbsolutePath()+"\\Fattura"+codiceUnivoco+".pdf");
+						fos=new FileOutputStream(pdfFile);
+						fos.write(pdfFileContent);
+						Desktop.getDesktop().open(pdfFile);
+					}
+					
+				} catch (SQLException |IOException  e1) {
+					new LogView(e1);
+					e1.printStackTrace();
+				}finally {
+					if(fos!=null)
+						try {
+							fos.close();
+						} catch (IOException e1) {}
+				}
+				
+				
+			}
+		});JMenuItem modificaFatturaMenuItem=new JMenuItem("Modifica");
+		modificaFatturaMenuItem.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String codiceUnivoco=(String)tabellaFatture.getValueAt(tabellaFatture.getSelectedRow(), 0);
+				String partitaIva=(String)tabellaFatture.getValueAt(tabellaFatture.getSelectedRow(), 2);
+				Fattura fatturaOriginale=appModel.getFattura(codiceUnivoco, partitaIva);
+				new ModificaFatturaView(appModel, fatturaOriginale);
+				
+				
+			}
+		});
+		popupMenu.add(modificaFatturaMenuItem);
+		popupMenu.add(getPdfFileMenuItem);
 		tabellaFatture = new JTable();
+		tabellaFatture.setComponentPopupMenu(popupMenu);
 		tabellaFatture.setModel(new TabellaFatturaModel(appModel.getFatture()));
 		JScrollPane scrollPane2 = new JScrollPane(tabellaFatture);
 		CercaFatturePanel.add(scrollPane2, "2, 12, 13, 1, fill, fill");
@@ -205,7 +262,7 @@ public class MainView implements Observer {
 					TabellaFatturaModel tfm=(TabellaFatturaModel)tabellaFatture.getModel();
 					String codiceUnivoco=(String) tfm.getValueAt(tabellaFatture.getSelectedRow(),0);
 					String partitaIva=(String) tfm.getValueAt(tabellaFatture.getSelectedRow(), 2);
-					new DettagliFatturaView(appModel,codiceUnivoco,partitaIva);
+					new DettagliFatturaView(appModel,appModel.getFattura(codiceUnivoco, partitaIva));
 				}
 				
 			}

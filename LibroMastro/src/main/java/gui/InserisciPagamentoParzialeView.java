@@ -40,8 +40,7 @@ import com.github.lgooddatepicker.components.DatePickerSettings;
 
 public class InserisciPagamentoParzialeView {
 	
-	private String codiceUnivoco;
-	private String partitaIva;
+	private Fattura fattura;
 	private AppModel appModel;
 	private JFrame frmGestionaleFattura;
 	private JTextField campoNrFattura;
@@ -58,17 +57,16 @@ public class InserisciPagamentoParzialeView {
 	/**
 	 * Create the application.
 	 */
-	public InserisciPagamentoParzialeView(AppModel appModel,String codiceUnivoco,String partitaiva){
+	public InserisciPagamentoParzialeView(AppModel appModel,Fattura fattura){
 		this.appModel=appModel;
-		this.codiceUnivoco=codiceUnivoco;
-		this.partitaIva=partitaiva;
+		this.fattura=fattura;
 		initialize();
 	}
 	
 	private void initialize() {
 		frmGestionaleFattura = new JFrame();
 		frmGestionaleFattura.setTitle("Gestionale Fattura - Nuovo PP");
-		frmGestionaleFattura.setBounds(100, 100, 530, 261);
+		frmGestionaleFattura.setBounds(100, 100, 531, 284);
 		frmGestionaleFattura.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		frmGestionaleFattura.getContentPane().setLayout(new FormLayout(new ColumnSpec[] {
 				FormSpecs.RELATED_GAP_COLSPEC,
@@ -90,6 +88,8 @@ public class InserisciPagamentoParzialeView {
 				FormSpecs.DEFAULT_ROWSPEC,
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				FormSpecs.DEFAULT_ROWSPEC,
+				FormSpecs.RELATED_GAP_ROWSPEC,
+				RowSpec.decode("max(17dlu;default)"),
 				FormSpecs.RELATED_GAP_ROWSPEC,
 				RowSpec.decode("max(17dlu;default)"),}));
 		
@@ -140,11 +140,11 @@ public class InserisciPagamentoParzialeView {
 						alertArea.setText("Un pagamento parziale con stessa data e stesso importo è già presente, per confermare premi di nuovo");
 						return;
 					}
-					PagamentoParziale pp=new PagamentoParziale(codiceUnivoco,importo,
+					PagamentoParziale pp=new PagamentoParziale(fattura.getCodiceUnivoco(),importo,
 							dataPagamento,
-							TipoPagamento.valueOf(selectorTipoPagamento.getSelectedItem().toString()),partitaIva);
+							TipoPagamento.valueOf(selectorTipoPagamento.getSelectedItem().toString()),fattura.getPartitaIva());
 					appModel.inserisciPagamentoParziale(pp);
-					dataPagamentoPicker.clear();
+					dataPagamentoPicker.setDateToToday();
 					campoImporto.setText("");
 					alertArea.setText("");
 					appModel.refetch();
@@ -178,6 +178,6 @@ public class InserisciPagamentoParzialeView {
 	}
 	
 	public void fillview() {
-		campoNrFattura.setText(codiceUnivoco);
+		campoNrFattura.setText(fattura.getCodiceUnivoco());
 	}	
 }

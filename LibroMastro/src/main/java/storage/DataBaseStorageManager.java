@@ -1,5 +1,6 @@
 package storage;
 
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -59,28 +60,31 @@ public class DataBaseStorageManager{
 		}	
 	}
 	
-	public void inserisciFattura(Fattura fattura) throws SQLException{
+	public void inserisciFattura(Fattura fattura) throws SQLException, FileNotFoundException{
 		Connection con=DriverManager.getConnection(url, user, password);
-		Statement stm=null;
+		PreparedStatement ps=null;
 		try {
-			String stmString="insert into Fatture(partitaiva,nomeAzienda,codiceunivoco,dataEmissione,dataScadenza,importo,note) ";
-			StringJoiner sj=new StringJoiner("','","values('","')");
+			String stmString="insert into Fatture(partitaiva,nomeAzienda,codiceunivoco,dataEmissione,dataScadenza,importo,note,pdfFile) ";
+			StringJoiner sj=new StringJoiner("','","values('","',?)");
+			
 			sj.add(fattura.getPartitaIva());
-			sj.add(fattura.getNomeAzienda().toLowerCase().trim());
+			sj.add(fattura.getNomeAzienda());
 			sj.add(fattura.getCodiceUnivoco());
 			sj.add(fattura.getDataEmissione().toString());
 			sj.add(fattura.getDataScadenza().toString());
 			sj.add(fattura.getImporto().getAmount().toString());
 			sj.add(fattura.getNote());
 			stmString+=sj.toString();
-			stm=con.createStatement();
-			stm.execute(stmString);
+			ps=con.prepareStatement(stmString);
+			if(fattura.getPdfFile()==null) ps.setNull(1, java.sql.Types.BINARY);
+			else ps.setBinaryStream(1, new FileInputStream(fattura.getPdfFile()));
+			ps.execute();
 			System.out.println("Inserita nel Database la fattura  "+fattura.getCodiceUnivoco()
 			+" operazione effettuata da "+user);
-		}catch(SQLException e) {
+		}catch(SQLException | FileNotFoundException e) {
 			throw e;
 		}finally {
-				stm.close();
+				ps.close();
 				if(con!=null) con.close();
 		}
 	}
@@ -138,37 +142,7 @@ public class DataBaseStorageManager{
 		return pagamentiParziali;
 	}
 	
-	public ArrayList<Fattura> leggiFattureDaPartitaIva(String partitaIvaHead) throws SQLException,MalformedDataException{
-		Statement stm=null;
-		Connection con=DriverManager.getConnection(url, user, password);
-		ArrayList<Fattura> fatture=new ArrayList<Fattura>();
-		try {
-			String stmString="select * from fatture where partitaiva like"+"'"+partitaIvaHead+"%'";
-			stm=con.createStatement();
-			stm.execute(stmString);
-			ResultSet rs=stm.getResultSet();
-			while(rs.next()) {
-				Fattura fattura=new Fattura(rs.getString("partitaIva"),rs.getString("nomeAzienda"),rs.getString("codiceUnivoco"),
-						LocalDate.parse(rs.getString("dataEmissione")),LocalDate.parse(rs.getString("dataScadenza")), Money.of(CurrencyUnit.EUR, rs.getDouble("importo")),
-						rs.getString("note"));
-				fattura.setUser(rs.getString("utente"));
-				fattura.setNumeroProgressivo(rs.getInt("numeroProgressivo"));
-				fattura.setStato(rs.getString("stato"));
-				fatture.add(fattura);
-			}
-			System.out.println("Caricate "+fatture.size()+" fatture");
-			for(Fattura fattura:fatture) {
-				ArrayList<PagamentoParziale> pagamentiParziali=leggiPagamentiParziali(fattura.getCodiceUnivoco());
-				fattura.setPagamentiParziali(pagamentiParziali);
-			}
-		}catch(SQLException | MalformedDataException e) {
-			throw e;
-		}finally {
-			stm.close();
-			if(con!=null) con.close();
-		}
-		return fatture;
-	}
+
 	
 	public ArrayList<Fattura> leggiFatture(String nomeAziendaPiece,String partitaIvaHead) throws SQLException , MalformedDataException{
 		Connection con=DriverManager.getConnection(url, user, password);
@@ -235,6 +209,22 @@ public class DataBaseStorageManager{
 		return fatture;
 	}
 	
+	public byte[] getPdfFileContent(String codiceUnivoco,String partitaIva) throws SQLException {
+		Connection con=DriverManager.getConnection(url, user, password);
+		Statement stm;
+		byte[] pdfFileContent=null;
+		String stmString="select pdfFile from fatture where (codiceunivoco,partitaiva)=('"+codiceUnivoco+"','"+partitaIva+"')";
+		stm=con.createStatement();
+		stm.execute(stmString);
+		ResultSet rs=stm.getResultSet();
+		if(rs.next()) {
+			pdfFileContent=rs.getBytes("pdfFile");
+		}
+		if(pdfFileContent!=null) System.out.println("Caricato contenuto pdf, lunghezza "+pdfFileContent.length);
+		else throw new SQLException("Nessun file Trovato");
+		return pdfFileContent;
+		
+	}
 	
 	public Azienda leggiAzienda(String partitaIva,String nomeAzienda) throws SQLException, MalformedDataException{
 		Connection con=DriverManager.getConnection(url, user, password);
@@ -309,31 +299,66 @@ public class DataBaseStorageManager{
 		}
 	}
 	
-	public void updateFattura(Fattura fatturaModificata,Fattura fatturaOriginale) throws SQLException {
+	public void modificaFattura(Fattura fatturaOriginale,Fattura fatturaModificata) throws Exception {
 		Connection con=DriverManager.getConnection(url,user,password);
-		Statement stm=null;
+		PreparedStatement ps=null;
+		String stmString;
 		try {
-			String stmString="update fatture set (partitaiva,nomeazienda,codiceunivoco,dataemissione,datascadenza,importo,note)=";
-			StringJoiner sj=new StringJoiner("','", "('", "')");
-			sj.add(fatturaModificata.getPartitaIva());
-			sj.add(fatturaModificata.getNomeAzienda());
-			sj.add(fatturaModificata.getCodiceUnivoco());
-			sj.add(fatturaModificata.getDataEmissione().toString());
-			sj.add(fatturaModificata.getDataScadenza().toString());
-			sj.add(fatturaModificata.getImporto().getAmount().toString());
-			sj.add(fatturaModificata.getNote());
-			StringJoiner sj1=new StringJoiner("','","('","')");
-			sj1.add(fatturaOriginale.getPartitaIva());
-			sj1.add(fatturaOriginale.getCodiceUnivoco());
-			stmString+=sj.toString();
-			stmString+=" where (partitaiva,codiceunivoco)="+sj1.toString();
-			stm=con.createStatement();
-			stm.execute(stmString);
-		}catch(SQLException e) {
+			if(fatturaModificata.getPdfFile()==null) {
+				stmString="update fatture set (partitaiva,nomeazienda,codiceunivoco,dataemissione,datascadenza,importo,note)=";
+				StringJoiner sj=new StringJoiner("','", "('", "')");
+				sj.add(fatturaModificata.getPartitaIva());
+				sj.add(fatturaModificata.getNomeAzienda());
+				sj.add(fatturaModificata.getCodiceUnivoco());
+				sj.add(fatturaModificata.getDataEmissione().toString());
+				sj.add(fatturaModificata.getDataScadenza().toString());
+				sj.add(fatturaModificata.getImporto().getAmount().toString());
+				sj.add(fatturaModificata.getNote());
+				stmString+=sj.toString()+"where (codiceUnivoco,partitaIva)=('"+fatturaOriginale.getCodiceUnivoco()+"','"+fatturaOriginale.getPartitaIva()+"')";
+				ps=con.prepareStatement(stmString);
+			}
+			else {
+				stmString="update fatture set (partitaiva,nomeazienda,codiceunivoco,dataemissione,datascadenza,importo,note,pdfFile)=";
+				StringJoiner sj=new StringJoiner("','", "('", "',?)");
+				sj.add(fatturaModificata.getPartitaIva());
+				sj.add(fatturaModificata.getNomeAzienda());
+				sj.add(fatturaModificata.getCodiceUnivoco());
+				sj.add(fatturaModificata.getDataEmissione().toString());
+				sj.add(fatturaModificata.getDataScadenza().toString());
+				sj.add(fatturaModificata.getImporto().getAmount().toString());
+				sj.add(fatturaModificata.getNote());
+				stmString+=sj.toString()+"where (codiceUnivoco,partitaIva)=('"+fatturaOriginale.getCodiceUnivoco()+"','"+fatturaOriginale.getPartitaIva()+"')";
+				ps=con.prepareStatement(stmString);
+				ps.setBinaryStream(1, new FileInputStream(fatturaModificata.getPdfFile()));
+			}
+			ps.execute();
+			System.out.println("Modificata fattura "+fatturaOriginale.getCodiceUnivoco()+" emessa da "+fatturaOriginale.getNomeAzienda());
+		}catch(SQLException | FileNotFoundException e) {
 			throw e;
 		}finally {
-			stm.close();
+			if(ps!=null) ps.close();
 			con.close();
+		}
+	}
+	
+	public void modificaPagamentoParziale(PagamentoParziale ppOriginale,PagamentoParziale ppModificato) throws SQLException {
+		Connection con=DriverManager.getConnection(url, user, password);
+		Statement stm=null;
+		try {
+			String stmString="update pagamentiparziali set (dataPagamento,importo,tipoPagamento)=";
+			StringJoiner sj=new StringJoiner("','","('","')");
+			sj.add(ppModificato.getDataPagamento().toString());
+			sj.add(ppModificato.getImporto().getAmount().toString());
+			sj.add(ppModificato.getTipoPagamento().toString());
+			stmString+=sj.toString()+" where indicepagamento="+ppOriginale.getIndicepagamento();
+			stm=con.createStatement();
+			stm.execute(stmString);
+			System.out.println("Modificato pagamento parziale di indice "+ppOriginale.getIndicepagamento());
+		}catch(Exception e) {
+			throw e;
+		}finally {
+			con.close();
+			if(stm!=null) stm.close();
 		}
 	}
 	

@@ -25,6 +25,7 @@ create table fatture(
 	primary key (codiceunivoco,partitaiva),
 	note varchar(1000),
 	utente varchar(100) default current_user,
+	pdfFile bytea,
 	foreign key (partitaIva,nomeAzienda) references aziende(partitaIva,nomeAzienda) on update cascade,
 	unique (numeroProgressivo)
 );
