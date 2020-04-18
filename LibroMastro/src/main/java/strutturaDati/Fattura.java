@@ -18,8 +18,8 @@ public class Fattura {
 	private LocalDate dataScadenza;
 	private Money importo;
 	private String note;
-	private String user="non registrato";
 	private String stato="nessuno";
+	private String user="non registrato";
 	private File pdfFile=null;
 	private ArrayList<PagamentoParziale> pagamentiParziali;
 	
@@ -200,7 +200,10 @@ public class Fattura {
 
 
 	public void setPagamentiParziali(ArrayList<PagamentoParziale> pagamentiParziali) {
+		if(pagamentiParziali.size()==0) return;
 		this.pagamentiParziali = pagamentiParziali;
+		if(this.getImportoRimanente().isZero()) stato="completato";
+		else stato="parziale";
 	}
 	
 	

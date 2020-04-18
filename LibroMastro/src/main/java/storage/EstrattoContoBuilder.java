@@ -57,7 +57,7 @@ public class EstrattoContoBuilder {
 		File file=new File(dest);
 		PdfDocument pdfDoc=new PdfDocument(new PdfWriter(dest));
 		Document doc=new Document(pdfDoc);
-		Table table=new Table(10);
+		Table table=new Table(8);
 		table.setFontSize(11);
 		
 		doc.add(new Paragraph("Estratto Conto di "+azienda.getNomeAzienda()).setFontSize(17).setBold().setTextAlignment(TextAlignment.CENTER));
@@ -72,8 +72,6 @@ public class EstrattoContoBuilder {
 			table.addCell("€"+fattura.getImporto().getAmount().toString());
 			table.addCell(fattura.getDataEmissione().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 			table.addCell(fattura.getDataEmissione().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
-			table.addCell(fattura.getUser());
-			table.addCell("");
 			table.addCell("");
 			table.addCell("");
 			table.addCell("");
@@ -83,11 +81,9 @@ public class EstrattoContoBuilder {
 				table.addCell("");
 				table.addCell("");
 				table.addCell("");
-				table.addCell("");
 				table.addCell("€"+pp.getImporto().getAmount().toString());
 				table.addCell(pp.getDataPagamento().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 				table.addCell(pp.getTipoPagamento().toString());
-				table.addCell(pp.getUser());
 				table.addCell("");
 			}
 		}

@@ -105,7 +105,7 @@ public class DettagliFatturaView implements Observer {
 		frmGestionaleFatture.getContentPane().add(campoStatoPagamento, "12, 4, left, default");
 		campoStatoPagamento.setColumns(10);
 		
-		JLabel lblNewLabel = new JLabel("Registrata da:");
+		JLabel lblNewLabel = new JLabel("Ultima modifica:");
 		lblNewLabel.setFont(new Font("Tahoma", Font.BOLD, 15));
 		frmGestionaleFatture.getContentPane().add(lblNewLabel, "4, 6, left, default");
 		

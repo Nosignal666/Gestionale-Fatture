@@ -8,7 +8,6 @@ public class Azienda {
 	private String nomeAzienda;
 	private String partitaIva;
 	ArrayList<Fattura> fatture;
-	private String user="non registrato";
 	
 	public Azienda() {
 		
@@ -46,13 +45,6 @@ public class Azienda {
 	public void setFatture(ArrayList<Fattura> fatture) {
 		this.fatture = fatture;
 	}
-	public String getUser() {
-		return user;
-	}
-	public void setUser(String user) {
-		this.user = user;
-	}
-	
 
 	
 	

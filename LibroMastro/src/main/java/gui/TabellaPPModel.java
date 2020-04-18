@@ -14,7 +14,7 @@ import strutturaDati.PagamentoParziale;
 public class TabellaPPModel extends AbstractTableModel{
 	
 	private ArrayList<PagamentoParziale> pagamentiParziali;
-	private final String[] nomeCampi= {"Indice pagamento","Data pagamento","Importo","Tipo Pagamento","Registrato da"};
+	private final String[] nomeCampi= {"Indice pagamento","Data pagamento","Importo","Tipo Pagamento","Ultima modifica"};
 	private Field[] campi=PagamentoParziale.class.getDeclaredFields();
 	
 	public TabellaPPModel() {

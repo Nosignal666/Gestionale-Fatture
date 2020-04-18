@@ -14,7 +14,7 @@ import strutturaDati.Fattura;
 public class TabellaFatturaModel extends AbstractTableModel{
 	
 	ArrayList<Fattura> fatture;
-	private final String[] nomeCampi= {"Codice Univoco","NomeAzienda","Partita Iva","Numero Progressivo","Anno","Data Emissione","Data Scadenza","Importo","note","utente","Stato"};
+	private final String[] nomeCampi= {"Codice Univoco","NomeAzienda","Partita Iva","Numero Progressivo","Anno","Data Emissione","Data Scadenza","Importo","note","Stato","Ultima modifica"};
 	private Field[] campi=Fattura.class.getDeclaredFields();
 	
 	
@@ -34,7 +34,7 @@ public class TabellaFatturaModel extends AbstractTableModel{
 
 	@Override
 	public int getColumnCount() {
-		return 11;
+		return nomeCampi.length;
 	}
 
 	@Override

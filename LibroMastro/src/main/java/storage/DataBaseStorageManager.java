@@ -120,7 +120,9 @@ public class DataBaseStorageManager{
 		Connection con=DriverManager.getConnection(url, user, password);
 		ArrayList<PagamentoParziale> pagamentiParziali=new ArrayList<PagamentoParziale>();
 		try {
-			String stmString="select * from pagamentiParziali where codiceunivoco= "+"'"+codiceUnivoco+"'";
+			String stmString="select distinct on (operazionieffettuate.indiceOggetto) pagamentiparziali.*,operazionieffettuate.utente from pagamentiParziali,operazionieffettuate where codiceunivoco= "+"'"+codiceUnivoco+"'"
+					+ " and operazionieffettuate.nomeTabella='pagamentiparziali' and operazionieffettuate.indiceoggetto=pagamentiparziali.indiceoggetto order by "
+					+ " operazionieffettuate.indiceOggetto, operazionieffettuate.tstamp desc";
 			stm=con.createStatement();
 			stm.execute(stmString);
 			ResultSet rs=stm.getResultSet();
@@ -128,9 +130,9 @@ public class DataBaseStorageManager{
 				PagamentoParziale pp=new PagamentoParziale(rs.getString("codiceunivoco"), Money.of(CurrencyUnit.EUR,rs.getDouble("importo")), 
 						LocalDate.parse(rs.getString("dataPagamento")),
 						TipoPagamento.valueOf(rs.getString("tipoPagamento")),rs.getString("partitaiva"));
-				pp.setIndicepagamento(rs.getInt("indicepagamento"));
+				pp.setIndicepagamento(rs.getInt("indiceOggetto"));
 				pp.setUser(rs.getString("utente"));
-				pagamentiParziali.add(pp);
+			pagamentiParziali.add(pp);
 			}
 		}catch(SQLException e) {
 			throw e;
@@ -149,7 +151,10 @@ public class DataBaseStorageManager{
 		Statement stm=null;
 		ArrayList<Fattura> fatture=new ArrayList<Fattura>();
 		try {
-			String stmString="select * from fatture where nomeAzienda like"+"'%"+nomeAziendaPiece+"%'"+"and partitaiva like "+"'"+partitaIvaHead+"%'";
+			String stmString="select distinct on(fatture.indiceoggetto) fatture.*, operazionieffettuate.utente "
+					+ "from fatture,operazionieffettuate where fatture.nomeAzienda like"+"'%"+nomeAziendaPiece+"%'"+"and fatture.partitaiva like "+"'"+partitaIvaHead+"%' "
+					+ "and operazionieffettuate.nometabella='fatture' and operazionieffettuate.indiceOggetto=fatture.indiceOggetto order by indiceOggetto, operazionieffettuate.tstamp desc ";
+			System.out.println(stmString);
 			stm=con.createStatement();
 			stm.execute(stmString);
 			ResultSet rs=stm.getResultSet();
@@ -158,8 +163,7 @@ public class DataBaseStorageManager{
 						LocalDate.parse(rs.getString("dataEmissione")),LocalDate.parse(rs.getString("dataScadenza")), Money.of(CurrencyUnit.EUR,rs.getDouble("importo")),
 						rs.getString("note"));
 				fattura.setUser(rs.getString("utente"));
-				fattura.setNumeroProgressivo( rs.getInt("numeroProgressivo"));
-				fattura.setStato(rs.getString("stato"));
+				fattura.setNumeroProgressivo( rs.getInt("indiceOggetto"));
 				fatture.add(fattura);
 			}
 			System.out.println("Caricate "+fatture.size()+" fatture");
@@ -190,7 +194,6 @@ public class DataBaseStorageManager{
 				Fattura fattura=new Fattura(rs.getString("partitaIva"),rs.getString("nomeAzienda"),rs.getString("codiceUnivoco"),
 						LocalDate.parse(rs.getString("dataEmissione")),LocalDate.parse(rs.getString("dataScadenza")), Money.of(CurrencyUnit.EUR,rs.getDouble("importo")),
 						rs.getString("note"));
-				fattura.setUser(rs.getString("utente"));
 				fattura.setNumeroProgressivo( rs.getInt("numeroProgressivo"));
 				fattura.setStato(rs.getString("stato"));
 				fatture.add(fattura);
@@ -350,7 +353,7 @@ public class DataBaseStorageManager{
 			sj.add(ppModificato.getDataPagamento().toString());
 			sj.add(ppModificato.getImporto().getAmount().toString());
 			sj.add(ppModificato.getTipoPagamento().toString());
-			stmString+=sj.toString()+" where indicepagamento="+ppOriginale.getIndicepagamento();
+			stmString+=sj.toString()+" where indiceoggetto="+ppOriginale.getIndicepagamento();
 			stm=con.createStatement();
 			stm.execute(stmString);
 			System.out.println("Modificato pagamento parziale di indice "+ppOriginale.getIndicepagamento());
