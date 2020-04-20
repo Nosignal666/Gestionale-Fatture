@@ -2,7 +2,7 @@
 Semplice client con interfaccia grafica per gestire fatture da un database su Postgresql.
 Nella release è presente un file sql per creare il database, i privilegi sono a discrezione dell'admin.
 
-![Releases](https://github.com/Nosignal666/Gestionale-Fatture/releases)
+Releases: https://github.com/Nosignal666/Gestionale-Fatture/releases
 
 # Screenshots
 ![Screenshot](LibroMastro/Screenshots/Screenshot(14).png)
