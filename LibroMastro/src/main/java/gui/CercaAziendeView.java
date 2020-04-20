@@ -19,10 +19,15 @@ import java.awt.Font;
 import javax.swing.JTextField;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -106,11 +111,21 @@ public class CercaAziendeView implements Observer{
 				try {
 					String nomeAzienda=(String)tabellaAziende.getValueAt(tabellaAziende.getSelectedRow(),0);
 					String partitaIva=(String)tabellaAziende.getValueAt(tabellaAziende.getSelectedRow(),1);
-					appModel.scriviEstrattoConto(nomeAzienda, partitaIva,
-							dataInizioPicker.getDate(),
-							dataFinePicker.getDate());
-					dataFinePicker.clear();
-					dataInizioPicker.clear();
+					JFileChooser fc=new JFileChooser();
+					fc.setFileHidingEnabled(true);
+					fc.setApproveButtonText("Seleziona");
+					fc.setDialogType(JFileChooser.SAVE_DIALOG);
+					File dest=new File(fc.getCurrentDirectory().getAbsolutePath()+"\\EstrattoConto-"+nomeAzienda+".pdf");
+					fc.setSelectedFile(dest);
+					if(fc.showSaveDialog(panel)==JFileChooser.APPROVE_OPTION) {
+						if(!dest.getAbsolutePath().endsWith(".pdf")) dest=new File(dest.getAbsolutePath()+".pdf");
+						appModel.scriviEstrattoConto(nomeAzienda, partitaIva,
+								dataInizioPicker.getDate(),
+								dataFinePicker.getDate(),fc.getSelectedFile());
+						dataFinePicker.setDateToToday();;
+						dataInizioPicker.setDateToToday();
+					}
+					
 				} catch (Exception e) {
 					new LogView(e);
 					e.printStackTrace();

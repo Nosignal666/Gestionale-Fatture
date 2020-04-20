@@ -92,7 +92,6 @@ execute procedure checkCoerenceF();
 --Tabelle per sistema di tracciamento operazioni
 create extension hstore;
 create table operazionieffettuate(
-	id serial,
 	indiceOggetto int,
 	tstamp timestamp default now(),
 	nometabella text,

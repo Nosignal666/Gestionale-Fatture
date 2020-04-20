@@ -1,5 +1,6 @@
 package storage;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.sql.Connection;
@@ -154,7 +155,6 @@ public class DataBaseStorageManager{
 			String stmString="select distinct on(fatture.indiceoggetto) fatture.*, operazionieffettuate.utente "
 					+ "from fatture,operazionieffettuate where fatture.nomeAzienda like"+"'%"+nomeAziendaPiece+"%'"+"and fatture.partitaiva like "+"'"+partitaIvaHead+"%' "
 					+ "and operazionieffettuate.nometabella='fatture' and operazionieffettuate.indiceOggetto=fatture.indiceOggetto order by indiceOggetto, operazionieffettuate.tstamp desc ";
-			System.out.println(stmString);
 			stm=con.createStatement();
 			stm.execute(stmString);
 			ResultSet rs=stm.getResultSet();
@@ -194,8 +194,7 @@ public class DataBaseStorageManager{
 				Fattura fattura=new Fattura(rs.getString("partitaIva"),rs.getString("nomeAzienda"),rs.getString("codiceUnivoco"),
 						LocalDate.parse(rs.getString("dataEmissione")),LocalDate.parse(rs.getString("dataScadenza")), Money.of(CurrencyUnit.EUR,rs.getDouble("importo")),
 						rs.getString("note"));
-				fattura.setNumeroProgressivo( rs.getInt("numeroProgressivo"));
-				fattura.setStato(rs.getString("stato"));
+				fattura.setNumeroProgressivo( rs.getInt("indiceOggetto"));
 				fatture.add(fattura);
 			}
 			System.out.println("Caricate "+fatture.size()+" fatture");
@@ -289,14 +288,14 @@ public class DataBaseStorageManager{
 		return false;
 	}
 	
-	public void scriviEstrattoConto(String nomeAzienda,String partitaIva,LocalDate dataInizio,LocalDate dataFine) throws SQLException, MalformedDataException, FileNotFoundException {
+	public void scriviEstrattoConto(String nomeAzienda,String partitaIva,LocalDate dataInizio,LocalDate dataFine, File dest) throws SQLException, MalformedDataException, FileNotFoundException {
 		Azienda azienda;
 		ArrayList<Fattura> fatture;
 		try {
 			azienda=leggiAzienda(partitaIva,nomeAzienda);
 			fatture=leggiFattureFiltroTempo(nomeAzienda, partitaIva, dataInizio, dataFine);
 			azienda.setFatture(fatture);
-			new EstrattoContoBuilder(azienda, dataInizio, dataFine).scriviPdf();
+			new EstrattoContoBuilder(azienda, dataInizio, dataFine,dest).scriviPdf();
 		}catch(SQLException e) {
 			throw e;
 		}

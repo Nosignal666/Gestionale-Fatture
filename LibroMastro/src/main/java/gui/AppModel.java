@@ -1,4 +1,5 @@
 package gui;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -93,8 +94,8 @@ public class AppModel {
 	public Boolean checkifAlreadyExist(LocalDate dataPagamento,Money importo) throws SQLException {
 		return dbsm.checkIfAlreadyExistPP(dataPagamento, importo);
 	}
-	public void scriviEstrattoConto(String nomeAzienda,String partitaIva,LocalDate dataInizio,LocalDate dataFine) throws FileNotFoundException, SQLException, MalformedDataException {
-		dbsm.scriviEstrattoConto(nomeAzienda, partitaIva, dataInizio, dataFine);
+	public void scriviEstrattoConto(String nomeAzienda,String partitaIva,LocalDate dataInizio,LocalDate dataFine,File dest) throws FileNotFoundException, SQLException, MalformedDataException {
+		dbsm.scriviEstrattoConto(nomeAzienda, partitaIva, dataInizio, dataFine,dest);
 	}
 	public ArrayList<Azienda> leggiAziende(String partitaIvaHead,String nomeAziendaPiece) throws SQLException, MalformedDataException{
 		return dbsm.leggiAziende(partitaIvaHead, nomeAziendaPiece);
