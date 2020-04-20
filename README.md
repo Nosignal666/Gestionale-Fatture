@@ -1,2 +1,2 @@
 # Gestionale-Fatture
-![Screenshot](LibroMastro/Screenshots/Screenshot (14).png)
+![Image of Yaktocat](https://octodex.github.com/images/yaktocat.png)
