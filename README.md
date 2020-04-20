@@ -1,4 +1,4 @@
-# Gestionale-Fatture
+# Info
 Semplice client con interfaccia grafica per gestire fatture da un database su Postgresql.
 Nella release è presente un file sql per creare il database, i privilegi sono a discrezione dell'admin.
 
